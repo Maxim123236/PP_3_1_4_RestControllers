@@ -8,6 +8,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -18,23 +20,23 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty(message = "Name should not be empty")
-    @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters")
-    @Column(name = "name")
-    private String name;
+    @NotEmpty(message = "First Name should not be empty")
+    @Size(min = 2, max = 30, message = "First Name should be between 2 and 30 characters")
+    @Column(name = "first_Name")
+    private String firstName;
 
-    @NotEmpty(message = "Surname should not be empty")
-    @Size(min = 2, max = 50, message = "Surname should be between 2 and 50 characters")
-    @Column(name = "surname")
-    private String surname;
+    @NotEmpty(message = "Last Name should not be empty")
+    @Size(min = 2, max = 50, message = "Last Name should be between 2 and 50 characters")
+    @Column(name = "last_Name")
+    private String lastName;
 
     @Min(value = 1, message = "Age should be greater than 0")
     @Column(name = "age")
-    private byte age;
+    private long age;
 
-    @NotEmpty(message = "Username should not be empty")
-    @Column(name = "username", unique = true)
-    private String username;
+    @NotEmpty(message = "Email should not be empty")
+    @Column(name = "email", unique = true)
+    private String email;
 
     @NotEmpty(message = "Password should not be empty")
     @Column(name = "password")
@@ -46,15 +48,16 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles;
+    private List<Role> roles;
 
-    public User() {}
+    public User() {
+    }
 
-    public User(String name, String surname, byte age, String username, String password, Set<Role> roles) {
-        this.name = name;
-        this.surname = surname;
+    public User(String firstName, String lastName, long age, String email, String password, List<Role> roles) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.age = age;
-        this.username = username;
+        this.email = email;
         this.password = password;
         this.roles = roles;
     }
@@ -73,7 +76,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
@@ -96,51 +99,65 @@ public class User implements UserDetails {
         return true;
     }
 
-    public String getName() {
-        return name;
+    public long getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getEmail() {
+        return email;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public byte getAge() {
-        return age;
-    }
-
-    public void setAge(byte age) {
-        this.age = age;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public Set<Role> getRoles() {
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public long getAge() {
+        return age;
+    }
+
+    public void setAge(long age) {
+        this.age = age;
+    }
+
+    public List<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public boolean isAdmin() {
+        for (Role role : roles) {
+            if (Objects.equals(role.getName(), "ROLE_ADMIN")) {
+                return true;
+            }
+        }
+        return false;
 
-    public void setId(Long id) {
-        this.id = id;
     }
 }

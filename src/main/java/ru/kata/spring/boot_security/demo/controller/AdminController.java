@@ -1,10 +1,14 @@
 package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.model.User;
+
+import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.util.List;
@@ -14,50 +18,38 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
+    private final RoleService roleService;
 
     @Autowired
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     @GetMapping
-    public String adminPage(Model model) {
-        List<User> users = userService.getAllUsers();
-        model.addAttribute("users", users);
+    public String adminPage(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        model.addAttribute("principal", user);
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("roles", roleService.getAllRoles());
+        model.addAttribute("newUser", new User());
         return "admin";
     }
 
-    @GetMapping("/add")
-    public String addUserForm(Model model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("allRoles", userService.getAllRoles()); // Передаем все роли в форму
-        return "add-user";
-    }
-
-    @PostMapping("/add")
-    public String addUser(@ModelAttribute User user, @RequestParam("roles") List<Long> roleIds) {
-        user.setRoles(userService.getRolesById(roleIds));
+    @PostMapping("/new")
+    public String registrationPost(@ModelAttribute("newUser") User user, @AuthenticationPrincipal UserDetails userDetails) {
         userService.saveUser(user);
         return "redirect:/admin";
     }
 
-    @GetMapping("/edit/{id}")
-    public String editUserForm(@PathVariable Long id, Model model) {
-        User user = userService.getUserById(id);
-        model.addAttribute("user", user);
-        model.addAttribute("allRoles", userService.getAllRoles()); // Передаем все роли в форму
-        return "edit-user";
-    }
-
-    @PostMapping("/edit")
-    public String editUser(@ModelAttribute User user, @RequestParam("roles") List<Long> roleIds) {
-        user.setRoles(userService.getRolesById(roleIds));
-        userService.updateUser(user);
+    @PatchMapping("/update/{id}")
+    public String patchAdminRedactor(@ModelAttribute("user") User user, @PathVariable("id") Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        userService.adminRedactor(user, id);
         return "redirect:/admin";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Long id) {
+    @DeleteMapping("/delete/{id}")
+    public String adminDelete(@PathVariable("id") Long id, @AuthenticationPrincipal UserDetails userDetails) {
         userService.deleteUser(id);
         return "redirect:/admin";
     }
