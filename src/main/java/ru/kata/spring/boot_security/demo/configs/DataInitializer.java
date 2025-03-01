@@ -1,6 +1,7 @@
 package ru.kata.spring.boot_security.demo.configs;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.model.Role;
@@ -17,15 +18,19 @@ public class DataInitializer {
 
     private final UserService userService;
     private final RoleService roleService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public DataInitializer(UserService userService, RoleService roleService) {
+    @Autowired
+    public DataInitializer(UserService userService,
+                           RoleService roleService, BCryptPasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
     public void init() {
-//        ((UserServiceImpl) userService).setPasswordEncoder(passwordEncoder);
+        ((UserServiceImpl) userService).setPasswordEncoder(passwordEncoder);
         Role adminRole = new Role("ROLE_ADMIN");
         Role userRole = new Role("ROLE_USER");
         roleService.saveRole(adminRole);

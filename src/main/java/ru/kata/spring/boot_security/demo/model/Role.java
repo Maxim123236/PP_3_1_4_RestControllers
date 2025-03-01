@@ -11,6 +11,7 @@ public class Role implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "name", unique = true, nullable = false)
@@ -43,10 +44,6 @@ public class Role implements GrantedAuthority {
         return name;
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
 
     @Override
     public boolean equals(Object o) {
