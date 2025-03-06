@@ -60,8 +60,6 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    // Геттеры и сеттеры
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<Role> roles = this.getRoles();
@@ -162,6 +160,5 @@ public class User implements UserDetails {
             }
         }
         return false;
-
     }
 }

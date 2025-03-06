@@ -28,15 +28,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getAllUsers() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public User findByUsername(String username){
+    public User findByUsername(String username) {
         return userRepository.findByUsername(username);
-
     }
 
     @Override
@@ -46,37 +45,45 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userRepository.save(user);
     }
 
-
     @Override
     @Transactional
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public User getUserById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException(String.format("There is no user with ID = %d in database", id));
+        }
+
+        return user.get();
     }
 
     @Override
     @Transactional
-    public void adminRedactor(User user, Long id) {
-        Optional<User> optionalUser = userRepository.findById(id);
-        if (optionalUser.isPresent()) {
-            User editUser = optionalUser.get();
-            editUser.setId(user.getId());
-            editUser.setFirstName(user.getFirstName());
-            editUser.setLastName(user.getLastName());
-            editUser.setAge(user.getAge());
-            editUser.setEmail(user.getEmail());
-            editUser.setRoles(user.getRoles());
-            if (!editUser.getPassword().equals(user.getPassword())) {
-                editUser.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
-            }
-            userRepository.save(editUser);
+    public void updateUser(User updatedUser) {
+        Optional<User> userOptional = userRepository.findById(updatedUser.getId());
+
+        if (userOptional.isPresent()) {
+            User existingUser = userOptional.get();
+            existingUser.setFirstName(updatedUser.getFirstName());
+            existingUser.setLastName(updatedUser.getLastName());
+            existingUser.setEmail(updatedUser.getEmail());
+            existingUser.setAge(updatedUser.getAge());
+            userRepository.save(existingUser);
+        } else {
+            throw new RuntimeException("User not found with id: " + updatedUser.getId());
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserById(long userId) {
+        userRepository.deleteById(userId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = findByUsername(username);
-        if(user == null) {
+        if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
         return user;

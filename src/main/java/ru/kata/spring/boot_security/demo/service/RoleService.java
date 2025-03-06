@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 public interface RoleService {
-    //Set<Role> getRolesById(List<Long> roleId); // ??
     List<Role> getAllRoles();
     void saveRole(Role role);
 }
