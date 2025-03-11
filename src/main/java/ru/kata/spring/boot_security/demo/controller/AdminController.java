@@ -3,7 +3,6 @@ package ru.kata.spring.boot_security.demo.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.model.User;
-
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.util.List;
@@ -36,11 +35,9 @@ public class AdminController {
         return ResponseEntity.ok(user);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser (@PathVariable long id) {
         userService.deleteUserById(id);
         return ResponseEntity.ok(String.format("User with ID = %d was deleted!", id));
     }
-
-
 }

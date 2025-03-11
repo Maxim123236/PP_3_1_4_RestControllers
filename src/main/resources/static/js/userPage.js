@@ -3,7 +3,7 @@ $(async function() {
 });
 async function thisUser() {
 
-    fetch("http://localhost:8080/api/user/getUserInfo")
+    fetch("http://localhost:8080/api/user/user_info")
         .then(res => res.json())
         .then(data => {
             let user = `$(

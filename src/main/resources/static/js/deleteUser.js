@@ -2,42 +2,43 @@ $(async function () {
     deleteUser();
 });
 
-function deleteUser() {
+async function deleteUser() {
     const deleteForm = document.forms["formDeleteUser"];
 
-    deleteForm.addEventListener("submit", ev => {
+    deleteForm.addEventListener("submit", async (ev) => {
         ev.preventDefault();
-        console.log(deleteForm.id.value);
+        const userId = deleteForm.id.value;
 
-        fetch("http://localhost:8080/api/admin/delete/" + deleteForm.id.value, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(() => {
+        try {
+            await fetch(`http://localhost:8080/api/admin/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             $('#deleteFormCloseButton').click();
             allUsers();
-        })
-    })
+        } catch (error) {
+            console.error("Error deleting user:", error);
+        }
+    });
 }
 
 async function getUser(id) {
-    let url = "http://localhost:8080/api/user/" + id;
-    let response = await fetch(url);
+    const url = `http://localhost:8080/api/user/${id}`;
+    const response = await fetch(url);
     return await response.json();
 }
 
-
-$('#delete').on('show.bs.modal', ev => {
-    let button = $(ev.relatedTarget);
-    let id = button.data('id');
-    showDeleteModal(id);
-})
+$('#delete').on('show.bs.modal', async (ev) => {
+    const button = $(ev.relatedTarget);
+    const userId = button.data('id');
+    await showDeleteModal(userId);
+});
 
 async function showDeleteModal(id) {
-    $('#deleteRoles').empty();
-    let user = await getUser(id);
-    let form = document.forms["formDeleteUser"];
+    const user = await getUser(id);
+    const form = document.forms["formDeleteUser"];
 
     form.id.value = user.id;
     form.firstName.value = user.firstName;
@@ -45,22 +46,13 @@ async function showDeleteModal(id) {
     form.age.value = user.age;
     form.email.value = user.email;
 
-    await fetch("http://localhost:8080/api/role")
-        .then(res => res.json())
-        .then(roles => {
-            roles.forEach(role => {
-                let selectedRole = false;
-                for (let i = 0; i < user.roles.length; i++) {
-                    if (user.roles[i].name === role.name) {
-                        selectedRole = true;
-                        break;
-                    }
-                }
-                let el = document.createElement("option");
-                el.text = role.name;
-                el.value = role.id;
-                if (selectedRole) el.selected = true;
-                $('#deleteRoles')[0].appendChild(el);
-            })
-        })
+    const rolesResponse = await fetch("http://localhost:8080/api/role");
+    const roles = await rolesResponse.json();
+
+    const rolesSelect = $('#deleteRoles').empty();
+    roles.forEach(role => {
+        const isSelected = user.roles.some(userRole => userRole.name === role.name);
+        const option = new Option(role.name, role.id, isSelected, isSelected);
+        rolesSelect.append(option);
+    });
 }
